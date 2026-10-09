@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Galaxy</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+        #ui {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: #ff69b4;
+            pointer-events: none;
+            text-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+            font-size: 18px;
+            letter-spacing: 2px;
+            z-index: 10;
+        }
+        /* สไตล์หน้าต่าง Pop-up (Modal) สำหรับคลิกดูรูปและความทรงจำ */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            flex-direction: column;
+        }
+        .modal-content {
+            background: #1a001a;
+            border: 2px solid #ff69b4;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+        }
+        .modal-content img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            max-height: 250px;
+            object-fit: cover;
+        }
+        .close-btn {
+            background: #ff69b4;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        /* ปุ่มคำสั่งตรงกลาง */
+        #center-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 105, 180, 0.2);
+            border: 2px solid #ff69b4;
+            color: #ff69b4;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 105, 180, 0.4);
+            z-index: 20;
+            transition: 0.3s;
+        }
+        #center-btn:hover {
+            background: #ff69b4;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">HAPPY ANNIVERSARY &hearts;</div>
+    
+    <!-- ปุ่มกลางจอสำหรับกดเปิดความทรงจำ -->
+    <button id="center-btn" onclick="openMemory()">กดเพื่อดูความทรงจำของเรา ✨</button>
+
+    <!-- หน้าต่างแสดงรูปและข้อความ -->
+    <div id="memoryModal" class="modal">
+        <div class="modal-content">
+            <!-- เปลี่ยนลิงก์รูปภาพตรง src เป็นรูปของมึงกับแฟน -->
+            <img id="modalImg" src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=500" alt="Memory">
+            <p id="modalText">ขอบคุณที่อยู่ข้างกันมาตลอดนะ ❤️</p>
+            <button class="close-btn" onclick="closeMemory()">ปิด</button>
+        </div>
+    </div>
+
+    <!-- โหลด Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // ข้อมูลความทรงจำที่จะเปลี่ยนไปเรื่อยๆ เวลาคลิก
+        const memories = [
+            { img: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=500", text: "วันที่เราไปเที่ยวด้วยกันครั้งแรก ความสุขที่สุด ❤️" },
+            { img: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=500", text: "ขอบคุณที่คอยซัพพอร์ตและไม่ทิ้งกันไปไหนนะ 🌟" },
+            { img: "https://images.unsplash.com/photo-1494774157365-9e04c6720e47?w=500", text: "รักมึงที่สุดในโลกเลย อยู่ด้วยกันไปนานๆ นะเว้ย 🥰" }
+        ];
+        let currentMemory = 0;
+
+        function openMemory() {
+            const modal = document.getElementById('memoryModal');
+            const img = document.getElementById('modalImg');
+            const text = document.getElementById('modalText');
+            
+            // ดึงข้อมูลรูปและข้อความตาม index
+            img.src = memories[currentMemory].img;
+            text.innerText = memories[currentMemory].text;
+            
+            modal.style.display = 'flex';
+            
+            // สลับรูปถัดไปสำหรับการกดครั้งหน้า
+            currentMemory = (currentMemory + 1) % memories.length;
+        }
+
+        function closeMemory() {
+            document.getElementById('memoryModal').style.display = 'none';
+        }
+
+        // --- ตั้งค่ากราฟิก 3D กาแล็กซี่ ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 30, 50);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // สร้างกาแล็กซี่
+        const galaxyGeometry = new THREE.BufferGeometry();
+        const particleCount = 12000;
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+
+        const colorInside = new THREE.Color('#ff2a85');
+        const colorOutside = new THREE.Color('#8a2be2');
+
+        for (let i = 0; i < particleCount; i++) {
+            const i3 = i * 3;
+            const radius = Math.random() * 40;
+            const spinAngle = radius * 0.5;
+            const branchAngle = ((i % 3) * Math.PI * 2) / 3;
+
+            positions[i3] = Math.cos(branchAngle + spinAngle) * radius + (Math.random() - 0.5) * 3;
+            positions[i3 + 1] = (Math.random() - 0.5) * 5;
+            positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + (Math.random() - 0.5) * 3;
+
+            const mixedColor = colorInside.clone();
+            mixedColor.lerp(colorOutside, radius / 40);
+            colors[i3] = mixedColor.r;
+            colors[i3 + 1] = mixedColor.g;
+            colors[i3 + 2] = mixedColor.b;
+        }
+
+        galaxyGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        galaxyGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const galaxyMaterial = new THREE.PointsMaterial({
+            size: 0.6,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        const galaxy = new THREE.Points(galaxyGeometry, galaxyMaterial);
+        scene.add(galaxy);
+
+        // สร้างรูปหัวใจ 3D ตรงกลาง
+        const heartPoints = [];
+        for (let t = 0; t < Math.PI * 2; t += 0.02) {
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+            heartPoints.push(new THREE.Vector3(x * 0.6, y * 0.6 + 8, (Math.random() - 0.5) * 2));
+        }
+
+        const heartGeometry = new THREE.BufferGeometry().setFromPoints(heartPoints);
+        const heartMaterial = new THREE.PointsMaterial({ color: 0xff69b4, size: 0.8 });
+        const heartParticleSystem = new THREE.Points(heartGeometry, heartMaterial);
+        scene.add(heartParticleSystem);
+
+        // แอนิเมชันหมุน
+        function animate() {
+            requestAnimationFrame(animate);
+            galaxy.rotation.y += 0.002;
+            heartParticleSystem.rotation.y -= 0.002;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
